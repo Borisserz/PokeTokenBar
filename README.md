@@ -70,7 +70,7 @@ Shiny hatches keep their distinct colors through every evolution — menu bar, h
 <tr>
 <td width="55%" valign="middle">
 <h3>A Pokédex worth filling</h3>
-The <b>Pokédex</b> folds every species you've owned into one cell — 24 per page in dex-number order, and a ✨ on the ones you own shiny. The <b>Catch log</b> keeps the individuals: newest first, each with its full evolution line, rarity, nature, and capture date.
+The <b>Pokédex</b> folds every species you've owned into one cell — 16 per page in a 4×4 grid, with larger sprites and names, and a ✨ on the ones you own shiny. Search by name or number, filter by rarity or shiny appearance, and change the sort order in both views. The <b>Catch log</b> keeps the individuals: newest first, each with its full evolution line, rarity, nature, and capture date.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-collection-pokedex.png" width="300" alt="Pokédex — one cell per species"><br><br><img src="assets/screenshot-collection-catchlog.png" width="300" alt="Catch log — one row per Pokémon raised"></td>
 </tr>
@@ -167,6 +167,13 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 - **Burn-rate forecast** — projects when the current 5h window hits 100%.
 - **In-app updates** — one-click update check; current version shown in Settings.
 - **Usage recap** — a Pokédex-style recap of any week, month or year you step back to (total, meters, comparison with the previous period, day for day while it is still running, best day, best streak, graduations). History is kept locally for this year and the last.
+
+- **Local save backups** — automatic snapshots and corruption recovery, with a restore screen in Settings.
+- **Unown forms** — collect all 28 letter forms and inspect the forms you own in the Pokédex.
+- **Bulk Rare Candy** — use several candies at once and preview the growth before spending.
+- **Quota pace** — gauge markers show the elapsed share of a limit window; six color tiers indicate usage pace, and menu-bar limit percentages use the same colors.
+
+<img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
 ## Works with
 
