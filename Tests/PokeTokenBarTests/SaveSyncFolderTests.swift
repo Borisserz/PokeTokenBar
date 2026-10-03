@@ -6,8 +6,9 @@ import XCTest
 /// sharing one synced folder.
 @MainActor
 final class SaveSyncFolderTests: XCTestCase {
-    private var folder: URL!
-    private var suites: [String] = []
+    // Touched from the nonisolated setUp/tearDown; XCTest runs those and the test serially.
+    nonisolated(unsafe) private var folder: URL!
+    nonisolated(unsafe) private var suites: [String] = []
 
     override func setUpWithError() throws {
         folder = FileManager.default.temporaryDirectory
