@@ -1517,6 +1517,8 @@ extension UsageStoreTests {
         XCTAssertEqual(store.monthlyPlanPrice, 0)
         store.monthlyPlanPrice = .nan
         XCTAssertEqual(store.monthlyPlanPrice, 0)
+        store.monthlyPlanPrice = .infinity
+        XCTAssertEqual(store.monthlyPlanPrice, 0, "an infinite price would show a 0× row")
         testDefaults.set(-3.0, forKey: "monthlyPlanPrice")
         XCTAssertEqual(makeStore(providers: []).monthlyPlanPrice, 0, "a bad stored value loads as off")
     }
