@@ -469,6 +469,18 @@ read_when:
   통과한다 — 틀리는 건 첫 갱신 한 번뿐이라 눈에 띄지 않는다(개발 앱 defaults 에 키가 안 생긴 걸 보고
   발견). refresh 파이프라인에 새 파생 상태를 붙일 땐 그 입력이 phase 1/2 중 어디서 채워지는지 먼저
   확인하고, 회귀 가드는 **첫 refresh 한 번**으로 검증한다(`testTheFirstRefreshAlreadyFillsTheLedger`).
+- **"없음"을 0 으로 접는 파서는 옵셔널 폴백을 죽인다 — Cursor 페이지네이션.** `hasNextPage(totalCount: Int?)`
+  는 총계가 없으면 "꽉 찬 페이지면 계속" 으로 폴백하도록 짜였지만, 호출부가 `intValue(object["totalUsageEventsCount"])`
+  를 넘겨 키가 없을 때 `nil` 이 아니라 `0` 이 들어갔다 → `page * 100 < 0` 이 거짓이라 1페이지(100건)에서
+  멈추고 나머지 이벤트를 조용히 버렸다. 응답 키 자체를 세 가지(`usageEventsDisplay`/`usageEvents`/`events`)로
+  받는 코드라 메타데이터 부재는 설계상 가정된 입력이다.
+  **왜 못 걸렀나:** 폴백 테스트(`testHasNextPageWithoutMetadataKeepsPaginatingWhileFull`)가 `hasNextPage` 를
+  직접 `totalCount` 생략으로 불러 통과했다 — 실제 루프는 그 인자를 항상 채워 넘기므로 *다른 경로*로 통과한
+  false confidence.
+  **수정:** `optionalIntValue` — 키 부재·NSNull·파싱 불가면 `nil`.
+  **회귀 가드:** `testFetchFilteredEventsWithoutAnyPaginationMetadataKeepsPaginatingWhileFull` 가
+  `fetchFilteredEventsForTesting` 으로 루프 전체를 돈다(총계 없음/있음 둘 다). 수정 전 `[1]`·100건으로 실패 확인.
+  **스윕:** 이 파일의 다른 `intValue` 호출은 토큰 수라 0 이 올바른 기본값이다.
 
 ## 빌드·도구체인
 
