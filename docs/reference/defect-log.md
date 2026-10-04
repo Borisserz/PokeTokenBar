@@ -633,6 +633,10 @@ read_when:
 
 ## 표시·UI
 
+- **"재인증하라" 플래그는 성공뿐 아니라 "조회할 로그인이 없음"(nil) 에서도 내린다.** Cursor 401 뒤
+  로그아웃·`CURSOR_USAGE_API=0` 이면 `fetch()` 가 던지지 않고 nil 을 주는데, 플래그 해제가
+  `if let status` 안에만 있어 재로그인 안내가 재시작까지 남았다. 회귀:
+  `testCursorAuthExpiredClearsWhenThereIsNoCursorLoginAnymore`. (#411)
 - **Antigravity 그룹 표시명은 한 헬퍼로.** API 의 `displayName`("Gemini Models" 등)을 알림·사탕·
   펫 버블에 그대로 넣으면 앱 언어가 한국어여도 본문에 영어가 섞인다. 팝오버만 `L` 로 바꾸던
   분기를 `L.antigravityGroupTitle` 로 끌어올려 candy / `buildLimitWindows` / 팝오버가 공유한다.
