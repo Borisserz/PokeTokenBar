@@ -633,6 +633,10 @@ read_when:
 
 ## 표시·UI
 
+- **`L.t` 는 위치 인자라 옆 칸 문구를 붙여도 컴파일·자리표시자 검사를 통과한다.** 포르투갈어 칸에
+  스페인어 "evolución" 이 두 곳 들어가 홈 카드에 그대로 노출됐다(#405). 같은 문구를 옆 언어에서
+  복사할 때 생기는 부류라 소스 전체의 `t(` 호출을 스캔해 es/pt 전용 표지를 교차 검사한다.
+  회귀: `LocalizationColumnTests`.
 - **Antigravity 그룹 표시명은 한 헬퍼로.** API 의 `displayName`("Gemini Models" 등)을 알림·사탕·
   펫 버블에 그대로 넣으면 앱 언어가 한국어여도 본문에 영어가 섞인다. 팝오버만 `L` 로 바꾸던
   분기를 `L.antigravityGroupTitle` 로 끌어올려 candy / `buildLimitWindows` / 팝오버가 공유한다.
