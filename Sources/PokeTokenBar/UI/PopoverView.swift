@@ -451,27 +451,10 @@ struct PopoverView: View {
         }
     }
 
-    @ViewBuilder
+    /// Same row as every other limit, so the bar follows the used/remaining display mode and
+    /// the colors follow the pace gauge. The billing cycle has no fixed span, so no pace marker.
     private func cursorLimitRow(name: String, utilization: Double, reset: Date?) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text(name)
-                    .font(.callout)
-                Spacer()
-                Text(limitPercentText(utilization))
-                    .font(.callout)
-                    .monospacedDigit()
-                    .foregroundStyle(limitColor(utilization))
-                if let reset {
-                    Text("· \(reset, style: .relative)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            ProgressView(value: min(utilization, 100), total: 100)
-                .tint(limitColor(utilization))
-                .controlSize(.small)
-        }
+        quotaRow(name: name, utilization: utilization, reset: reset)
     }
 
     @ViewBuilder
@@ -978,12 +961,6 @@ struct PopoverView: View {
         f.dateFormat = "HH:mm"
         return f
     }()
-
-    private func limitColor(_ utilization: Double) -> Color {
-        if utilization >= store.critThreshold { return .red }
-        if utilization >= store.warnThreshold { return .orange }
-        return .green
-    }
 
     // MARK: 푸터
 

@@ -633,6 +633,10 @@ read_when:
 
 ## 표시·UI
 
+- **한도 막대는 `LimitProgressBar`·`PaceTier.gauge` 한 경로로만 그린다.** Cursor 행이 자체
+  `ProgressView(value: utilization)` 와 절대 임계색을 써서, 잔량 모드에서 라벨은 "80% 남음"인데 막대는
+  20% 만 차고 색도 메뉴바·다른 탭과 달랐다. 새 행을 추가할 때 `quotaRow` 를 거치지 않으면 같은 부류가
+  재발한다. 회귀: `LimitPaceTests.testEveryPopoverLimitBarFollowsTheDisplayMode`. (#407)
 - **Antigravity 그룹 표시명은 한 헬퍼로.** API 의 `displayName`("Gemini Models" 등)을 알림·사탕·
   펫 버블에 그대로 넣으면 앱 언어가 한국어여도 본문에 영어가 섞인다. 팝오버만 `L` 로 바꾸던
   분기를 `L.antigravityGroupTitle` 로 끌어올려 candy / `buildLimitWindows` / 팝오버가 공유한다.
