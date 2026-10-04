@@ -633,6 +633,10 @@ read_when:
 
 ## 표시·UI
 
+- **겹치는 두 슬라이더는 서로의 순서를 지켜야 한다.** 경고(50…95)·위험(80…100) 임계가 겹쳐 경고 95 /
+  위험 80 이 가능했고, 85% 창이 경고선 아래에서 "위험" 알림을 띄우며 경고 단계는 영영 발화하지 않았다.
+  한쪽을 넘기면 다른 쪽을 한 칸(5) 밀고, 저장값도 로드 시 정렬한다. 회귀:
+  `testWarningStaysBelowCritical`, `testStoredThresholdsLoadInOrder`. (#409)
 - **Antigravity 그룹 표시명은 한 헬퍼로.** API 의 `displayName`("Gemini Models" 등)을 알림·사탕·
   펫 버블에 그대로 넣으면 앱 언어가 한국어여도 본문에 영어가 섞인다. 팝오버만 `L` 로 바꾸던
   분기를 `L.antigravityGroupTitle` 로 끌어올려 candy / `buildLimitWindows` / 팝오버가 공유한다.
