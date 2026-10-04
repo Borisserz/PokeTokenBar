@@ -709,6 +709,17 @@ read_when:
   가드: `testReleasedSpeciesStaysInTheDex`·`testReleasingMidChainCreditsOnlyReachedForms`·
   `testReleasingDisguisedDittoKeepsShinyHidden` — 기록을 빼거나 `plannedPathIDs` 로 바꾸면 실패한다(주입 확인).
 
+- **위장 메타몽 이로치 숨김은 표시 경로 전부가 같은 판정을 써야 한다 — `MonState.displaysShiny`.**
+  규칙은 `currentIsShiny`·`ownsShinySpecies` 에 손으로 두 번 적혀 있었고, 세이브 스냅샷(`SaveSnapshotManager`
+  의 생성·목록·구버전 파일 경로 3곳)은 원값 `active.isShiny` 를 읽었다. 설정 → 스냅샷 행이
+  `SpriteView(shiny: snapshot.currentIsShiny)` 로 위장 종을 이로치로 그려 리빌을 미리 누설했다.
+  **왜 못 걸렀나:** 숨김 테스트는 `CompanionStore` 경로(홈·놓아주기·도감)만 봤고, 스냅샷은 `CompanionState` 를
+  직접 받아 store 를 거치지 않는다 — 새 표시 경로가 규칙을 재구현하지 않고 원값을 읽어도 막을 장치가 없었다.
+  **수정:** 판정을 `MonState.displaysShiny` 하나로 모으고 store·도감·스냅샷이 모두 그것을 쓴다.
+  `graduate` 의 `DexEntry(isShiny: a.isShiny)` 는 저장값(표시 아님)이라 원값이 맞다.
+  **회귀 가드:** `SaveSnapshotTests.testSnapshotDoesNotRevealShinyOfDisguisedDitto` — 생성·목록·구버전 파일
+  3경로와 리빌 후 공개를 확인. 수정 전 4건 실패 확인.
+
 - **컴팩트 표시는 오늘 사용한 프로바이더만.** 메뉴바(`menuLines`) 등 좁은 표시에서 한도·상태를 보일 땐
   `snapshots` 의 오늘 토큰>0 으로 게이트한다 — 설치만 되고 오늘 안 쓴 프로바이더(Codex 등)를 노출하지
   마라(#56 "미사용 프로바이더 탭" 계열의 표시 버전). 팝오버 상세 뷰는 전체 노출 유지(의도된 상세). 함정:
