@@ -561,6 +561,10 @@ read_when:
   **Antigravity 와 다른 이유가 여기 있다** — Google 은 회전하지 않아서 `AntigravityTokenCache` 가
   `refreshToken: refreshToken` 으로 기존 값을 그대로 재사용한다(`refreshGoogleToken`). 두 프로바이더의
   토큰 규약이 다른 것이지 Claude 쪽 구현 누락이 아니다.
+  반대로 Antigravity 는 이 갱신을 **자동 경로에서도** 써야 한다 — 토큰 파일 없이 수동 갱신으로 키체인에서
+  받은 자격증명은 메모리에 refresh token 을 들고 있는데, 자동 폴이 만료만 보고 `keychainInteractionNotAllowed`
+  를 던져 한도가 ~1시간 뒤부터 수동 클릭 전까지 stale 이었다(#415). 회귀:
+  `testAutoPollRefreshesAnExpiredKeychainCredentialWithoutKeychain`.
   **확실도:** 회전은 "Claude Code 가 응답의 토큰으로 교체 저장한다"에서 추론한 것이고 실제로 갱신을
   걸어 확인하지는 않았다 — 틀렸을 때의 대가가 사용자의 주 도구 로그인 파손이라 시험 자체를 하지 않았다.
   판단 근거는 확률이 아니라 비대칭이다: **잘 돼야 #241 세션 키가 이미 더 완전하게 주는 것(간격 축소 vs
