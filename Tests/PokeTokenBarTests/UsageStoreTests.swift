@@ -76,6 +76,14 @@ private final class SequenceClaudeLimits: ClaudeLimitsProviding, @unchecked Send
     }
 }
 
+private final class ScriptedCursorLimits: CursorLimitsProviding, @unchecked Sendable {
+    private var results: [Result<CursorRateLimitStatus?, Error>]
+    init(_ results: [Result<CursorRateLimitStatus?, Error>]) { self.results = results }
+    func fetch() async throws -> CursorRateLimitStatus? {
+        try (results.count > 1 ? results.removeFirst() : results[0]).get()
+    }
+}
+
 private struct FakeCodexLimits: CodexLimitsProviding {
     var status: CodexRateLimitStatus?
     func fetch() async throws -> CodexRateLimitStatus? { status }
@@ -861,6 +869,26 @@ final class UsageStoreTests: XCTestCase {
         store.critThreshold = 101
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertTrue(store.isLimitWarning)   // fiveHourForecast(beforeReset:true)
+    }
+
+    /// After a 401 the popover shows a "log in to Cursor again" notice. Logging out of Cursor
+    /// (no session token) or setting `CURSOR_USAGE_API=0` makes `fetch()` return nil without
+    /// throwing — there is nothing left to re-authenticate, so the notice must go away.
+    func testCursorAuthExpiredClearsWhenThereIsNoCursorLoginAnymore() async {
+        let cursor = ScriptedCursorLimits([.failure(LimitsError.httpStatus(401)), .success(nil)])
+        let store = UsageStore(providers: [],
+                               claudeLimitsProvider: FakeClaudeLimits(status: nil),
+                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                               antigravityLimitsProvider: FakeAntigravityLimits(status: nil),
+                               cursorLimitsProvider: cursor,
+                               autoRefresh: false,
+                               defaults: testDefaults)
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertTrue(store.cursorLimitsAuthExpired)
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertNil(store.cursorLimits)
+        XCTAssertFalse(store.cursorLimitsAuthExpired)
     }
 
     // MARK: burn tier

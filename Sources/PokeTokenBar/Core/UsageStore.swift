@@ -1637,9 +1637,10 @@ final class UsageStore {
     private func refreshCursorLimits() async {
         do {
             cursorLimits = try await cursorLimitsProvider.fetch()
+            // nil = no Cursor login or the API is switched off: nothing is left to re-authenticate.
+            cursorLimitsAuthExpired = false
             if let status = cursorLimits {
                 cursorLimitsUpdatedAt = Date()
-                cursorLimitsAuthExpired = false
                 let used = status.planUsage?.usedPercent.map { String(format: "%.1f", $0) } ?? "nil"
                 let remaining = status.planUsage?.remainingDollars.map { TokenFormatter.cost($0) } ?? "nil"
                 AppLog.write("cursor limits refreshed used=\(used)% remaining=\(remaining)")

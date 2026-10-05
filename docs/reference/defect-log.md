@@ -712,6 +712,10 @@ read_when:
 
 ## 표시·UI
 
+- **"재인증하라" 플래그는 성공뿐 아니라 "조회할 로그인이 없음"(nil) 에서도 내린다.** Cursor 401 뒤
+  로그아웃·`CURSOR_USAGE_API=0` 이면 `fetch()` 가 던지지 않고 nil 을 주는데, 플래그 해제가
+  `if let status` 안에만 있어 재로그인 안내가 재시작까지 남았다. 회귀:
+  `testCursorAuthExpiredClearsWhenThereIsNoCursorLoginAnymore`. (#411)
 - **외부 응답 배열의 원소 하나가 전체 디코드를 죽이지 않게 한다.** Antigravity 쿼터의 `remaining` 은
   protobuf oneof 라 `remainingFraction` 이 빠진 bucket 이 온다. 필드가 non-optional 이라 한 bucket 때문에
   응답 전체가 throw → 모든 Antigravity 막대가 직전 값에 얼어붙었다. 빠진 bucket 은 "소진"이 아니라
