@@ -51,6 +51,11 @@ read_when:
   locally but sampled the previous sprite in macOS 15 CI: the header had updated while the
   sprite's independent SwiftUI `.task(id:)` had not finished rendering. Keep transition-index
   diagnostics and prove a permanently stale sprite still fails after the readiness deadline.
+  Similarly, Pokédex grid cells previously gated shiny sprite rendering on `isSelected` (from
+  an older design where tapping toggled selection in place); once tapping opened the detail
+  sheet, cells were never selected in place and shiny species always rendered with normal sprites.
+  `DexSpeciesCell` must render shiny sprites directly for collected shiny species, verified
+  by `DexColorRenderingTests.testPokedexGridRendersShinySpeciesColor`.
 
 - **Bundled CLI discovery must cover the shipped app layout.** ChatGPT moved Codex from
   `Contents/Resources/codex` into `Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex`.
@@ -154,7 +159,12 @@ read_when:
   표시 임계 직전/도달·설정 즉시 변경·최종 졸업까지 검증한다.
   가드: `testRepeatGrowthIsDecidedFromTheCollectedBaseNotThePlannedFinal`·
   `testRepeatGrowthPersistsAcrossRestartWhileLegacyActiveDefaultsToStandardGrowth`·
-  `testRoundTripPreservesActiveRepeatGrowthBoost`·`testBoostedDisguiseRevealsAtTheHalvedThresholdAndKeepsTheBoost`.
+  `testRoundTripPreservesActiveRepeatGrowthBoost`·`testBoostedDisguiseRevealsAtTheHalvedThresholdAndANewDittoDropsTheBoost`.
+  메타몽 리빌은 hatch 뒤에 개체의 base 가 바뀌는 유일한 지점이라 base predicate 를 **리빌 때 메타몽 base 로
+  다시 판정**한다. 위장체의 할인은 위장 라인 기준(정체를 숨긴다)이고, 리빌이 그 값을 그대로 넘겨서 이미
+  졸업한 메타몽을 다시 얻어도 x2 가 없고 새 메타몽이 위장 라인의 x2 를 가져갔다. 리빌 테스트가 모두
+  `collectedFinals: []` 로 시드해 `메타몽 졸업 → 위장 메타몽 재부화` 트리거를 밟지 않았다.
+  가드: `testRevealingAnAlreadyGraduatedDittoGrantsTheRepeatBoost`.
 - **같은 규칙이 세이브 파일이 아니라 *외부에서 오는 모든 수치*에 적용된다 — 파싱 경계도 포함.** 위 규칙을
   "세이브 파일"로 좁게 읽은 탓에 사용량 로그 파서(`LocalUsageReader`)의 `intValue` 가 무방비로 남았고,
   같은 SIGTRAP 이 Codex·Claude·Gemini 세 경로에서 재현됐다(딥리뷰 2026-08-04). 사용량 로그도 앱이 쓴 게
@@ -279,6 +289,20 @@ read_when:
   `reportsCost` 를 켜지 마라. 가드: `testExtraRootFindsJsonlSessionsWithoutSqlite`·
   `testCliJsonlSessionIsReadFromWriterShapedEvents`·`testV3MessagesJsonlSessionIsRead` —
   JSONL 스캔을 끄면 이 셋이 빨개져야 한다(헬퍼 복사본이 아니라 프로덕션 `kiroEntries`).
+- **A valid event envelope does not guarantee complete content-block coverage.** Kiro CLI
+  2.25.0 JSONL contains `toolUse.data.input`, `toolResult.data.content` (nested `text`/`json`),
+  and `thinking.data.text`, but the reader accepted only `kind=text`. Tool-heavy sessions
+  therefore lost both current content and the history resent in later turns. Existing CLI
+  fixtures contained only text; the separate v3 tool-call test did not exercise this path.
+  Dispatch known block kinds, reusing the existing JSON-value byte estimate for arguments
+  and JSON results. Do not traverse the entire event: IDs, thinking signatures/redacted data,
+  images, and the duplicate `ToolResults.data.results` bookkeeping are not additional text.
+  `KiroContentBlockTests` uses synthetic writer-shaped blocks to cover input/output routing,
+  tool-only responses, UTF-8/nested JSON, cross-day history, Clear, late-result rescans and
+  keep-max deduplication. Kiro's entries/signatures are memory-only, so no disk-cache version
+  changes are needed. This fixes missing content, not the estimator's existing limitations:
+  bytes/4 and per-prompt history are not authoritative per-request/billed token counts.
+
 - **Antigravity의 생성 시각은 `gen_metadata` 한 곳에 고정돼 있지 않다.** 구 포맷은
   `chat_start_metadata.created_at`에 시각을 넣지만, 현재 포맷은 그 필드를 비우고 `steps.metadata`에
   타임스탬프를 둔다(`8 finished_at`, 없으면 `1 created_at`). 토큰 필드는 유지되므로 `gen_metadata`만
@@ -837,6 +861,17 @@ read_when:
   **회귀 가드:** `ScrollerLaneTests` 가 `Sources/PokeTokenBar/UI` 의 모든 세로 `ScrollView` 가 자기
   클로저 안에서 `.reservesScrollerLane()` 을 쓰는지 괄호 매칭으로 검사한다(주석·문자열 제외, 바깥에 붙인
   패딩은 스크롤러까지 밀어 불인정). 다섯 곳 각각을 빼면 해당 `파일:줄` 로 실패하는 것을 확인했다.
+- **A view that sets the cursor must reset it when it disappears, not only when hover ends.** Dex
+  links (#394) used `.pointerStyle(.link)`. Clicking one navigates the link away while the pointer is
+  still on it, so no hover-ended event arrives and the hand cursor stuck on the next screen. Nothing
+  caught it: hover can't be synthesized in tests (offscreen `mouseMoved` events don't drive SwiftUI
+  hover), and the PR screenshots were offscreen renders with no cursor. `DexEntryLink` now sets the
+  cursor from `onContinuousHover` and resets it in `onDisappear` (only if it set it), via the pure
+  `DexEntryLink.cursor(after:wasHovered:)`. **Regression guard:** `DexEntryLinkCursorTests`; with the
+  disappear reset removed, it fails.
+  **Test trap:** in the test process `NSCursor.arrow` compares equal to `nil` (`nil == .arrow` is
+  true), so an `XCTAssertEqual` on `NSCursor?` passes no matter what. Decide with a plain enum and map
+  to `NSCursor` only at the call site.
 
 - **숫자 표기 구간은 원값이 아니라 반올림된 문자열로 판정한다.**
   `TokenFormatter.percent` 는 `value == value.rounded()` 로 정수 여부를 보고 아니면 `%.1f` 를 찍었다 —
@@ -1016,6 +1051,14 @@ read_when:
   ③ **크기가 0 인 원본**(디코드 실패)은 0 나눗셈이 되므로 정사각 폴백으로 막는다.
   회귀 가드(`SpriteAspectRatioTests`)는 실제 PokeAPI 캔버스 치수를 넣고, **"비정사각이 정사각으로 나오지
   않는다"는 트리거 명제를 따로 둔다** — 이게 없으면 원본이 애초에 정사각인 케이스로도 전부 통과한다.
+- **In a fixed-height slot, fit the height, not a square.** The menu bar still fitted a 20pt
+  square after the fix above, so a wide canvas was sized by its width: Swanna #581 (137×69) came out
+  10pt tall, Tynamo #602 (57×19) under 7pt, and 345 of the 649 species missed the full 20pt height.
+  The tests missed it because their widest fixture was Pikachu (50×46), where width and height
+  barely differ, and the wide case asserted the square rule ("fills the 20pt content box" on the
+  width). `menuBarLayout` now fits 20pt tall up to `menuBarSpriteMaxWidth` (36pt, 645/649 at full
+  height). Measure a new cap against every canvas in the dex, not the cached few; the guard is
+  `testWideSpriteFillsMenuBarHeightUntilTheWidthCap` with the real Swanna and Tynamo canvases.
 
 ## 프로세스 제어·업데이트
 
