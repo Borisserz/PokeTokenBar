@@ -720,6 +720,10 @@ read_when:
   위험 80 이 가능했고, 85% 창이 경고선 아래에서 "위험" 알림을 띄우며 경고 단계는 영영 발화하지 않았다.
   한쪽을 넘기면 다른 쪽을 한 칸(5) 밀고, 저장값도 로드 시 정렬한다. 회귀:
   `testWarningStaysBelowCritical`, `testStoredThresholdsLoadInOrder`. (#409)
+- **한도 막대는 `LimitProgressBar`·`PaceTier.gauge` 한 경로로만 그린다.** Cursor 행이 자체
+  `ProgressView(value: utilization)` 와 절대 임계색을 써서, 잔량 모드에서 라벨은 "80% 남음"인데 막대는
+  20% 만 차고 색도 메뉴바·다른 탭과 달랐다. 새 행을 추가할 때 `quotaRow` 를 거치지 않으면 같은 부류가
+  재발한다. 회귀: `LimitPaceTests.testEveryPopoverLimitBarFollowsTheDisplayMode`. (#407)
 - **외부 응답 배열의 원소 하나가 전체 디코드를 죽이지 않게 한다.** Antigravity 쿼터의 `remaining` 은
   protobuf oneof 라 `remainingFraction` 이 빠진 bucket 이 온다. 필드가 non-optional 이라 한 bucket 때문에
   응답 전체가 throw → 모든 Antigravity 막대가 직전 값에 얼어붙었다. 빠진 bucket 은 "소진"이 아니라
