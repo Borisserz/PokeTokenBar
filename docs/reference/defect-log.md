@@ -676,6 +676,11 @@ read_when:
 
 ## 표시·UI
 
+- **외부 응답 배열의 원소 하나가 전체 디코드를 죽이지 않게 한다.** Antigravity 쿼터의 `remaining` 은
+  protobuf oneof 라 `remainingFraction` 이 빠진 bucket 이 온다. 필드가 non-optional 이라 한 bucket 때문에
+  응답 전체가 throw → 모든 Antigravity 막대가 직전 값에 얼어붙었다. 빠진 bucket 은 "소진"이 아니라
+  "알 수 없음"이므로 버리고 나머지는 디코드한다. 회귀:
+  `testBucketWithoutRemainingFractionDoesNotDropTheResponse`. (#413)
 - **Antigravity 그룹 표시명은 한 헬퍼로.** API 의 `displayName`("Gemini Models" 등)을 알림·사탕·
   펫 버블에 그대로 넣으면 앱 언어가 한국어여도 본문에 영어가 섞인다. 팝오버만 `L` 로 바꾸던
   분기를 `L.antigravityGroupTitle` 로 끌어올려 candy / `buildLimitWindows` / 팝오버가 공유한다.
