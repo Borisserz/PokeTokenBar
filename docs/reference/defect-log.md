@@ -182,6 +182,14 @@ read_when:
   (`UsageLedger.coveredSince`) — 행은 사용량이 있는 날에만 생기므로, 첫 행 날짜로 커버리지를 추정하면
   조용했던 기간과 기록 이전 기간이 구별되지 않는다. 오래된 행을 잘라낼 땐 커버리지도 함께 올린다
   (`testPruningForgetsTheCoverageItDrops`).
+- **본가 공식의 종 예외 — 껍질몬(#292) HP 는 항상 1.** `PokemonStatCalculator` 는 HP 를 일반 공식
+  `((2·base + iv)·level)/100 + level + 10` 으로만 계산해 껍질몬이 Lv50 에 67 HP 로 표시됐다. 토쿠닌
+  (#290) 분기에서 선택될 수 있고 Gen V 상한 안이라 실제로 부화 경로에 있다.
+  **왜 못 걸렀나:** 스탯 테스트는 일반 종(야돈) 하나로 공식만 확인했다. 공식의 종 예외는 그 종을 넣어야만 보인다.
+  **수정:** 종 id 로 HP 1 고정(`shedinjaSpeciesID`). base HP 1 이라는 이유로 판정하지 않는다 — 공식 데이터에
+  base HP 1 인 종은 껍질몬뿐이지만 규칙은 "종" 에 걸린 것이다.
+  **회귀 가드:** `PokemonProfileLogicTests.testShedinjaAlwaysHasOneHP` — Lv1/50/100 모두 1, 다른 스탯은 일반 공식,
+  base HP 1 인 다른 종은 일반 공식. 수정 전 3건 실패 확인.
 
 ## 외부 로그·사용량 소스
 
