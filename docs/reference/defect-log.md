@@ -724,6 +724,10 @@ read_when:
   `ProgressView(value: utilization)` 와 절대 임계색을 써서, 잔량 모드에서 라벨은 "80% 남음"인데 막대는
   20% 만 차고 색도 메뉴바·다른 탭과 달랐다. 새 행을 추가할 때 `quotaRow` 를 거치지 않으면 같은 부류가
   재발한다. 회귀: `LimitPaceTests.testEveryPopoverLimitBarFollowsTheDisplayMode`. (#407)
+- **`L.t` 는 위치 인자라 옆 칸 문구를 붙여도 컴파일·자리표시자 검사를 통과한다.** 포르투갈어 칸에
+  스페인어 "evolución" 이 두 곳 들어가 홈 카드에 그대로 노출됐다(#405). 같은 문구를 옆 언어에서
+  복사할 때 생기는 부류라 소스 전체의 `t(` 호출을 스캔해 es/pt 전용 표지를 교차 검사한다.
+  회귀: `LocalizationColumnTests`.
 - **외부 응답 배열의 원소 하나가 전체 디코드를 죽이지 않게 한다.** Antigravity 쿼터의 `remaining` 은
   protobuf oneof 라 `remainingFraction` 이 빠진 bucket 이 온다. 필드가 non-optional 이라 한 bucket 때문에
   응답 전체가 throw → 모든 Antigravity 막대가 직전 값에 얼어붙었다. 빠진 bucket 은 "소진"이 아니라
